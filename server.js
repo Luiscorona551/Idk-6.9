@@ -18,6 +18,10 @@ const epoxyPath = join(
   dirname(require.resolve('@mercuryworkshop/epoxy-transport')),
   '../dist'
 );
+const uvServiceWorker = [
+  "importScripts('/uv/uv.bundle.js', '/uv/uv.client.js', '/uv/uv.config.js', '/uv/uv.handler.js');",
+  readFileSync(join(uvPath, 'uv.sw.js'), 'utf8')
+].join('\n');
 const root = dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.set('trust proxy', 1);
@@ -44,7 +48,8 @@ app.post('/api/ai', aiRequest);
 
 // Ultraviolet's own uv.config.js is overridden by ours so the service worker
 // lives under /uv/ instead of the site root.
-app.get('/uv/uv.config.js', (req, res) => res.sendFile(join(root, 'uv.config.js')));
+app.get('/uv/uv.config.js', (req, res) => res.sendFile(join(root, 'public/uv/uv.config.js')));
+app.get('/uv/uv.sw.js', (req, res) => res.type('js').send(uvServiceWorker));
 app.use('/uv/', express.static(uvPath));
 app.use('/baremux/', express.static(baremuxPath));
 app.use('/epoxy/', express.static(epoxyPath));
